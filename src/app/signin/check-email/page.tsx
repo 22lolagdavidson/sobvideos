@@ -1,4 +1,4 @@
-export const metadata = { title: "Check your email · Open Enrollment Studio" };
+export const metadata = { title: "Check your email · Explainer Studio" };
 
 export default function CheckEmail() {
   return (

@@ -10,25 +10,10 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const baloo = Baloo_2({ subsets: ["latin"], weight: ["500", "600", "700", "800"], variable: "--font-baloo" });
 
 export const metadata: Metadata = {
-  title: "Open Enrollment Studio",
-  description: "Open enrollment and plain-language plan explainer videos for small-business health benefits.",
+  title: "Explainer Studio",
+  description: "Turn a health plan's Schedule of Benefits or SBC into a short cartoon explainer video.",
 };
 
-function linksFor(role: string | undefined, groupId: string | null | undefined) {
-  switch (role) {
-    case "BROKER_ADMIN":
-      return [{ href: "/broker", label: "Groups" }];
-    case "EMPLOYER_ADMIN":
-      return groupId ? [{ href: `/groups/${groupId}`, label: "Dashboard" }] : [];
-    case "EMPLOYEE":
-      return [
-        { href: "/enroll", label: "Enroll" },
-        { href: "/plans", label: "Plans & Videos" },
-      ];
-    default:
-      return [];
-  }
-}
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const session = await auth();
@@ -36,7 +21,12 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const agency = user?.agencyId
     ? await prisma.agency.findUnique({ where: { id: user.agencyId }, select: { name: true } })
     : null;
-  const links = linksFor(user?.role, user?.groupId);
+  const links = user?.agencyId
+    ? [
+        { href: "/videos", label: "Videos" },
+        { href: "/settings", label: "Settings" },
+      ]
+    : [];
 
   return (
     <html lang="en" className={`${inter.variable} ${baloo.variable}`}>
