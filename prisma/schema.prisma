@@ -301,6 +301,10 @@ model Employee {
   hireDate DateTime? @db.Date
   eligible Boolean   @default(true)
 
+  // Collected in the wizard's "About you" step (carriers need DOB for enrollment).
+  dob   DateTime? @db.Date
+  phone String?
+
   userId String? @unique
   user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
@@ -332,6 +336,7 @@ model Election {
   dependents  Json         @default("[]") // [{ name, relationship: "Spouse"|"Domestic partner"|"Child", dob }]
   tobacco     Boolean      @default(false)
   waiveReason WaiveReason?
+  waiveNote   String? // free text when waiveReason is OTHER
 
   // Monthly amounts, unrounded (rounded only for display).
   premium       Decimal @default(0) @db.Decimal(12, 4)
