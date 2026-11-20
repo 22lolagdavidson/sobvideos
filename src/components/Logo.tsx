@@ -10,7 +10,7 @@ export function Logo({ agencyName }: { agencyName?: string | null }) {
         </svg>
       </span>
       <span>
-        <b>Open Enrollment Studio</b>
+        <b>Explainer Studio</b>
         <small>{agencyName || "Davidson Solutions"}</small>
       </span>
     </Link>

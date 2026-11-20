@@ -13,7 +13,7 @@ export const DEV_OUTBOX = path.join(process.cwd(), "storage", "dev-outbox");
  */
 export async function sendMail(mail: Mail) {
   const server = process.env.EMAIL_SERVER;
-  const from = process.env.EMAIL_FROM || "Open Enrollment Studio <no-reply@localhost>";
+  const from = process.env.EMAIL_FROM || "Explainer Studio <no-reply@localhost>";
   if (server) {
     await nodemailer.createTransport(server).sendMail({ from, ...mail });
     return;

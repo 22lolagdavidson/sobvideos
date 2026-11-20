@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { AuthError } from "next-auth";
 import { auth, signIn } from "@/auth";
 
-export const metadata = { title: "Sign in · Open Enrollment Studio" };
+export const metadata = { title: "Sign in · Explainer Studio" };
 
 const ERRORS: Record<string, string> = {
   Verification: "That sign-in link has expired or was already used. Ask for a new one below.",
@@ -39,7 +39,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
       <div className="card">
         <h1>Sign in</h1>
         <p className="muted">
-          Enter the email your employer or broker has on file. We&apos;ll email you a secure sign-in link. No password
+          Enter your work email. We&apos;ll email you a secure sign-in link. No password
           needed.
         </p>
         {msg && (
@@ -59,7 +59,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
         {process.env.NODE_ENV !== "production" && !process.env.EMAIL_SERVER && (
           <p className="small muted" style={{ marginTop: 16 }}>
             Dev mode: emails aren&apos;t sent. Open the <a href="/dev/outbox">dev outbox</a> to click your link. Demo
-            accounts: broker@example.com, hr@example.com, alex.rivera@example.com.
+            account: broker@example.com.
           </p>
         )}
       </div>
