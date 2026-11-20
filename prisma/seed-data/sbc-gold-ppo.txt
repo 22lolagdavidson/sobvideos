@@ -1,0 +1,44 @@
+Summary of Benefits and Coverage: What this Plan Covers & What You Pay for Covered Services
+Bluebird Health Plan: Gold PPO 1500          Coverage Period: 01/01/2027 - 12/31/2027
+Coverage for: Individual + Family | Plan Type: PPO
+
+This is only a summary. The Summary of Benefits and Coverage (SBC) document will help you choose a health plan.
+(Demo document created for Open Enrollment Studio. Bluebird Health is a fictional carrier.)
+
+Important Questions | Answers | Why This Matters
+What is the overall deductible? $1,500 individual / $3,000 family for network providers. $3,000 individual / $6,000 family for out-of-network providers.
+Are there services covered before you meet your deductible? Yes. Preventive care, primary care visits, specialist visits, urgent care and generic drugs are covered before you meet your deductible.
+What is the out-of-pocket limit for this plan? $6,000 individual / $12,000 family for network providers. $12,000 individual / $24,000 family for out-of-network providers.
+Will you pay less if you use a network provider? Yes.
+
+Common Medical Event | Services You May Need | What You Will Pay (Network Provider) | (Out-of-Network Provider)
+If you visit a health care provider's office or clinic
+  Primary care visit to treat an injury or illness: $25 copay/visit | 40% coinsurance
+  Specialist visit: $50 copay/visit | 40% coinsurance
+  Preventive care/screening/immunization: No charge | Not covered
+If you have a test
+  Diagnostic test (x-ray, blood work): 20% coinsurance | 40% coinsurance
+If you need drugs to treat your illness or condition
+  Generic drugs (Tier 1): $10 copay/prescription (retail) | Not covered
+  Preferred brand drugs (Tier 2): $40 copay/prescription (retail) | Not covered
+If you need immediate medical attention
+  Emergency room care: $250 copay/visit | $250 copay/visit
+  Urgent care: $50 copay/visit | 40% coinsurance
+If you have a hospital stay
+  Facility fee (e.g., hospital room): 20% coinsurance | 40% coinsurance
+
+Excluded Services & Other Covered Services:
+Services Your Plan Generally Does NOT Cover: Cosmetic surgery, Dental care (Adult), Long-term care, Routine eye care (Adult), Weight loss programs.
+Other Covered Services: Chiropractic care (limited to 20 visits per year), Hearing aids, Infertility treatment.
+
+Coverage Examples
+Peg is Having a Baby (9 months of in-network pre-natal care and a hospital delivery)
+  The plan's overall deductible: $1,500   Specialist copayment: $50   Hospital (facility) coinsurance: 20%
+  Total Example Cost: $12,700
+  In this example, Peg would pay: Deductibles $1,500 | Copayments $10 | Coinsurance $2,200 | Limits or exclusions $60
+  The total Peg would pay is $3,770
+
+Managing Joe's Type 2 Diabetes (a year of routine in-network care of a well-controlled condition)
+  Total Example Cost: $5,600
+  In this example, Joe would pay: Deductibles $900 | Copayments $500 | Coinsurance $0 | Limits or exclusions $20
+  The total Joe would pay is $1,420

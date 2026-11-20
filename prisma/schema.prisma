@@ -1,0 +1,403 @@
+// Open Enrollment Studio data model.
+// Production runs on PostgreSQL. Money is stored as Decimal and only rounded to
+// cents when displayed (see src/lib/domain/cost.ts).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------- enums
+
+enum Role {
+  BROKER_ADMIN
+  EMPLOYER_ADMIN
+  EMPLOYEE
+}
+
+enum PlanType {
+  PPO
+  HMO
+  EPO
+  POS
+  HDHP_HSA // shown as "HDHP/HSA"
+  Other
+}
+
+enum Tier {
+  ee
+  es
+  ec
+  fam
+}
+
+enum ElectionStatus {
+  ENROLLED
+  WAIVED
+}
+
+enum ElectionSource {
+  EMPLOYEE // submitted by the employee in the wizard (window rules apply)
+  ADMIN // entered or edited by a broker/employer admin (always audit-logged)
+}
+
+enum WaiveReason {
+  SPOUSE_EMPLOYER_PLAN // counts as other coverage
+  OTHER_EMPLOYER_PLAN // counts as other coverage
+  MEDICARE // counts as other coverage
+  MEDICAID_CHIP // counts as other coverage
+  TRICARE_VA // counts as other coverage
+  MARKETPLACE // does NOT count
+  OTHER // does NOT count
+}
+
+enum SbcStatus {
+  UPLOADED
+  EXTRACTING
+  EXTRACTED
+  FAILED
+}
+
+enum ExplainerStatus {
+  DRAFT
+  APPROVED
+  RENDERING
+  READY
+  FAILED
+}
+
+enum JobStatus {
+  QUEUED
+  RUNNING
+  DONE
+  FAILED
+}
+
+// ---------------------------------------------------------------- Auth.js
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  role          Role      @default(EMPLOYEE)
+
+  // BROKER_ADMIN: the agency they work for. EMPLOYER_ADMIN: their group's agency.
+  agencyId String?
+  agency   Agency? @relation(fields: [agencyId], references: [id])
+
+  // EMPLOYER_ADMIN only: the one group they administer.
+  groupId String?
+  group   EmployerGroup? @relation("GroupAdmins", fields: [groupId], references: [id])
+
+  employee Employee?
+
+  accounts Account[]
+  sessions Session[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([agencyId])
+  @@index([groupId])
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+// ---------------------------------------------------------------- tenancy
+
+model Agency {
+  id           String  @id @default(cuid())
+  name         String
+  contactName  String?
+  contactEmail String?
+  contactPhone String?
+  logoKey      String? // storage key of the logo image
+  brandPrimary String  @default("#2b59c3")
+  brandAccent  String  @default("#ff8a3d")
+
+  users  User[]
+  groups EmployerGroup[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EmployerGroup {
+  id       String @id @default(cuid())
+  agencyId String
+  agency   Agency @relation(fields: [agencyId], references: [id])
+
+  name                String
+  planYear            Int
+  effectiveDate       DateTime @db.Date
+  windowStart         DateTime @db.Date
+  windowEnd           DateTime @db.Date
+  payPeriods          Int      @default(26) // 52 | 26 | 24 | 12, validated in the app
+  eePct               Decimal  @default(50) @db.Decimal(5, 2) // employer % of the employee-only rate
+  depPct              Decimal  @default(0) @db.Decimal(5, 2) // employer % of the dependent portion
+  participationTarget Decimal  @default(70) @db.Decimal(5, 2)
+
+  plans     Plan[]
+  employees Employee[]
+  admins    User[]     @relation("GroupAdmins")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([agencyId])
+}
+
+// ---------------------------------------------------------------- plans
+
+model Plan {
+  id      String        @id @default(cuid())
+  groupId String
+  group   EmployerGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  name    String
+  carrier String   @default("")
+  type    PlanType @default(PPO)
+
+  // Benefit fields are short display strings straight from the SBC,
+  // e.g. "$1,500 individual", "$25 copay", "20% after deductible".
+  deductible    String @default("")
+  deductibleFam String @default("")
+  oop           String @default("")
+  oopFam        String @default("")
+  coinsurance   String @default("")
+  pcp           String @default("")
+  specialist    String @default("")
+  urgent        String @default("")
+  er            String @default("")
+  rx            String @default("")
+
+  // Monthly premium rates in dollars. Never written by SBC/AI code.
+  rateEe  Decimal @default(0) @db.Decimal(10, 2)
+  rateEs  Decimal @default(0) @db.Decimal(10, 2)
+  rateEc  Decimal @default(0) @db.Decimal(10, 2)
+  rateFam Decimal @default(0) @db.Decimal(10, 2)
+
+  sortOrder Int @default(0)
+
+  sbcDocuments SbcDocument[]
+  explainers   Explainer[]
+  elections    Election[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([groupId])
+}
+
+model SbcDocument {
+  id     String @id @default(cuid())
+  planId String
+  plan   Plan   @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  fileKey       String
+  fileName      String
+  fileSize      Int
+  pageCount     Int?
+  extractedText String?   @db.Text
+  usedVision    Boolean   @default(false) // true when the text layer was empty and page images went to Claude
+  status        SbcStatus @default(UPLOADED)
+  error         String?
+
+  explainers Explainer[]
+
+  uploadedById String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([planId])
+}
+
+model Explainer {
+  id     String @id @default(cuid())
+  planId String
+  plan   Plan   @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  sbcDocumentId String?
+  sbcDocument   SbcDocument? @relation(fields: [sbcDocumentId], references: [id], onDelete: SetNull)
+
+  // ExplainerScript (src/lib/explainer/schema.ts): { plan, scenes[] }
+  script Json
+  status ExplainerStatus @default(DRAFT)
+
+  // Number check results: amounts in the script that aren't in the SBC text,
+  // and which of them the broker confirmed. Approval is blocked until resolved.
+  numberCheck Json?
+
+  // Rendering outputs
+  audioKeys   Json? // [{ scene, line, key, durationSec }]
+  captionsKey String? // WebVTT
+  mp4Key      String?
+  durationSec Float?
+  renderError String?
+
+  createdById  String?
+  approvedById String?
+  approvedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([planId, status])
+}
+
+// ---------------------------------------------------------------- people + elections
+
+model Employee {
+  id      String        @id @default(cuid())
+  groupId String
+  group   EmployerGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  name     String
+  email    String
+  hireDate DateTime? @db.Date
+  eligible Boolean   @default(true)
+
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // TODO(v2): if a carrier requires SSNs, add an application-level encrypted
+  // field here (e.g. AES-256-GCM with a KMS-managed key). Do NOT collect SSNs in v1.
+
+  elections Election[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([groupId, email])
+  @@index([groupId])
+}
+
+// Elections are append-only. Every change creates a new row with a higher
+// version; the row with the highest version for an employee is the one that counts.
+model Election {
+  id         String   @id @default(cuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  version    Int
+
+  planId String?
+  plan   Plan?   @relation(fields: [planId], references: [id], onDelete: SetNull)
+
+  status      ElectionStatus
+  tier        Tier         @default(ee)
+  dependents  Json         @default("[]") // [{ name, relationship: "Spouse"|"Domestic partner"|"Child", dob }]
+  tobacco     Boolean      @default(false)
+  waiveReason WaiveReason?
+
+  // Monthly amounts, unrounded (rounded only for display).
+  premium       Decimal @default(0) @db.Decimal(12, 4)
+  employerShare Decimal @default(0) @db.Decimal(12, 4)
+  employeeShare Decimal @default(0) @db.Decimal(12, 4)
+  perPaycheck   Decimal @default(0) @db.Decimal(12, 4)
+
+  signatureName String
+  signedAt      DateTime
+  ip            String?
+  userAgent     String?
+
+  source        ElectionSource @default(EMPLOYEE)
+  enteredById   String? // User who created this version
+  adminNote     String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([employeeId, version])
+  @@index([planId])
+}
+
+// ---------------------------------------------------------------- audit + jobs
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String? // null for system/worker
+  actorEmail String?
+  actorRole  Role?
+  action     String // e.g. "election.create", "plan.update", "explainer.approve"
+  entity     String // model name
+  entityId   String?
+  agencyId   String?
+  groupId    String?
+  before     Json?
+  after      Json?
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  @@index([agencyId, createdAt])
+  @@index([groupId, createdAt])
+  @@index([entity, entityId])
+}
+
+// DB-polled background jobs (SBC extraction, TTS, rendering). See worker/.
+model Job {
+  id        String    @id @default(cuid())
+  type      String // "sbc.extract" | "explainer.render" | ...
+  payload   Json
+  status    JobStatus @default(QUEUED)
+  attempts  Int       @default(0)
+  runAt     DateTime  @default(now())
+  lockedAt  DateTime?
+  lockedBy  String?
+  error     String?   @db.Text
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([status, runAt])
+}
+
+// Fixed-window counters for rate-limiting the AI and TTS endpoints.
+model RateLimit {
+  key       String   @id // e.g. "ai:user_123:2026-11-20T21"
+  count     Int      @default(0)
+  expiresAt DateTime
+
+  @@index([expiresAt])
+}

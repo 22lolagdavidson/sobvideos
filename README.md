@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Open Enrollment Studio
 
-## Getting Started
+Open enrollment for small-group health insurance (2–50 employees), built for **Davidson Solutions**.
+Brokers set up employer groups and plans, upload each plan's SBC, and the app turns it into a short
+cartoon explainer video hosted by Penny (a piggy bank) and Patch (a bandage). Employees watch it while
+they choose a plan.
 
-First, run the development server:
+- Full build spec: [`docs/SPEC.md`](docs/SPEC.md)
+- UX/copy/character reference: [`prototype/index.html`](prototype/index.html) (open it in a browser)
+
+> Status: **step 1 of 6** (scaffold, schema, auth, seed data). The full README (worker, deployment)
+> lands in step 6.
+
+## Quick start (local)
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env              # then set AUTH_SECRET / NEXTAUTH_SECRET (npx auth secret)
+docker compose up -d              # PostgreSQL on localhost:5432 (or use your own and edit DATABASE_URL)
+npm install
+npm run db:migrate                # applies prisma/migrations
+npm run db:seed                   # demo agency, group, 2 plans, 5 employees, 2 elections, 1 approved explainer
+npm run dev                       # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Sign in with a magic link. With `EMAIL_SERVER` empty, emails are written to `storage/dev-outbox/` and
+listed at <http://localhost:3000/dev/outbox>, so you can click the link there.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Demo account | Role |
+| --- | --- |
+| `broker@example.com` | Broker admin (Davidson Solutions) |
+| `hr@example.com` | Employer admin (Maple Street Bakery) |
+| `alex.rivera@example.com` (and 4 others) | Employee |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Sign-in is invite-only: an email works only if it belongs to a user or to an eligible employee on a roster.
 
-## Learn More
+## Scripts
 
-To learn more about Next.js, take a look at the following resources:
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Next.js dev server |
+| `npm test` | Vitest unit tests (tier logic, cost math, participation, number check) |
+| `npm run typecheck` / `npm run lint` | Type check / ESLint |
+| `npm run db:migrate` / `db:seed` / `db:reset` | Prisma migrations, demo seed, full reset |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Layout
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+prisma/schema.prisma        data model (Postgres)
+prisma/seed.ts              demo data; seed-data/ holds a demo SBC and its approved script
+src/auth.ts                 Auth.js v5: email magic links, database sessions, roles
+src/lib/authz.ts            server-side permission checks; every group query is scoped by agency/group
+src/lib/domain/             business rules: tier, cost math, participation, enrollment window
+src/lib/explainer/          script schema (Zod) and the SBC number check
+src/lib/mail.ts             SMTP mail, or the dev outbox
+src/lib/audit.ts            audit log writer
+```
