@@ -7,10 +7,6 @@ export default async function GroupPage({ params }: { params: Promise<{ groupId:
   const s = summarize(group, await employeesWithLatest(group.id));
   return (
     <div>
-      <div className="row" style={{ marginBottom: 16 }}>
-        <h1 style={{ margin: 0 }}>{group.name}</h1>
-        <span className={`pill ${s.window.key}`}>{s.window.label}</span>
-      </div>
       <div className="grid g4">
         {[
           ["Eligible", s.eligible],
@@ -25,7 +21,7 @@ export default async function GroupPage({ params }: { params: Promise<{ groupId:
         ))}
       </div>
       <p className="notice" style={{ marginTop: 16 }}>
-        Group setup arrives in step 2, and the full dashboard (roster, totals, CSV export) in step 3.
+        The full dashboard (roster, monthly totals, CSV export, reminders) arrives in step 3.
       </p>
     </div>
   );

@@ -107,3 +107,16 @@ th { font-size: .75rem; text-transform: uppercase; letter-spacing: .5px; color: 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+/* forms */
+.f-wrap { margin-bottom: 12px; }
+.field-err { color: #a12424; font-size: .82rem; font-weight: 600; margin-top: 2px; }
+[aria-invalid="true"] { border-color: #c93737 !important; }
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+fieldset:disabled input, fieldset:disabled select, fieldset:disabled textarea { background: #f3f4f8; color: var(--muted); }
+.section-title { display: flex; align-items: center; gap: 10px; margin: 28px 0 12px; }
+.section-title h2 { margin: 0; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+.subnav { display: flex; gap: 6px; border-bottom: 1px solid var(--line); margin-bottom: 20px; }
+.subnav a { padding: 8px 14px; font-weight: 600; color: var(--muted); text-decoration: none; border-bottom: 3px solid transparent; margin-bottom: -1px; }
+.subnav a[aria-current="page"] { color: var(--brand); border-bottom-color: var(--brand); }

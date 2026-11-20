@@ -8,7 +8,7 @@ they choose a plan.
 - Full build spec: [`docs/SPEC.md`](docs/SPEC.md)
 - UX/copy/character reference: [`prototype/index.html`](prototype/index.html) (open it in a browser)
 
-> Status: **step 1 of 6** (scaffold, schema, auth, seed data). The full README (worker, deployment)
+> Status: **step 2 of 6** (group setup, roster, plans). The full README (worker, deployment)
 > lands in step 6.
 
 ## Quick start (local)

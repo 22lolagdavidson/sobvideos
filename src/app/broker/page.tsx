@@ -16,7 +16,9 @@ export default async function BrokerDashboard() {
       <div className="row" style={{ marginBottom: 16 }}>
         <h1 style={{ margin: 0 }}>Employer groups</h1>
         <div className="spacer" />
-        {/* Group creation arrives in step 2 */}
+        <Link className="btn primary" href="/broker/groups/new">
+          + New group
+        </Link>
       </div>
       {groups.length === 0 ? (
         <div className="card">No groups yet.</div>

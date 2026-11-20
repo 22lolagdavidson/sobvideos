@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 function linksFor(role: string | undefined, groupId: string | null | undefined) {
   switch (role) {
     case "BROKER_ADMIN":
-      return [{ href: "/broker", label: "Groups" }];
+      return [{ href: "/broker", label: "Groups", match: ["/groups"] }];
     case "EMPLOYER_ADMIN":
       return groupId ? [{ href: `/groups/${groupId}`, label: "Dashboard" }] : [];
     case "EMPLOYEE":
